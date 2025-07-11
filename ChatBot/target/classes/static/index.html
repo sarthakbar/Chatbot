@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>ChatBot</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #121212;
+      color: #ffffff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+
+    h2 {
+      margin-bottom: 20px;
+      color: #00ffc8;
+    }
+
+    #chat {
+      width: 100%;
+      max-width: 800px;
+      height: 450px;
+      overflow-y: auto;
+      background-color: #1e1e1e;
+      border-radius: 10px;
+      padding: 15px;
+      box-shadow: 0 4px 10px rgba(0, 255, 200, 0.1);
+    }
+
+    .msg {
+      display: flex;
+      align-items: flex-start;
+      margin: 15px 0;
+    }
+
+    .user, .bot {
+      max-width: 75%;
+      padding: 12px;
+      border-radius: 15px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.2);
+      white-space: pre-wrap;
+    }
+
+    .user {
+      margin-left: auto;
+      background: #0084ff;
+      color: white;
+      border-bottom-right-radius: 0;
+    }
+
+    .bot {
+      margin-right: auto;
+      background: #2e2e2e;
+      color: #aaffaa;
+      border-bottom-left-radius: 0;
+    }
+
+    .avatar {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      margin-right: 10px;
+    }
+
+    .bot .avatar {
+      background: #00ffc8;
+    }
+
+    .user .avatar {
+      background: #0077ff;
+    }
+
+    #inputSection {
+      display: flex;
+      justify-content: center;
+      margin-top: 20px;
+      width: 100%;
+      max-width: 800px;
+    }
+
+    #input {
+      flex: 1;
+      padding: 12px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: none;
+      outline: none;
+      background: #333;
+      color: #fff;
+    }
+
+    button {
+      padding: 12px 20px;
+      margin-left: 10px;
+      border: none;
+      border-radius: 8px;
+      background-color: #00ffc8;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background-color: #00c9a7;
+    }
+  </style>
+</head>
+<body>
+  <h2>💬 ChatBot</h2>
+
+  <div id="chat"></div>
+
+  <div id="inputSection">
+    <input type="text" id="input" placeholder="Ask something..." />
+    <button onclick="sendMessage()">Send</button>
+  </div>
+
+  <script>
+    async function sendMessage() {
+      const input = document.getElementById("input");
+      const chat = document.getElementById("chat");
+      const userText = input.value.trim();
+      if (!userText) return;
+
+      // Add user message
+      const userDiv = document.createElement("div");
+      userDiv.className = "msg user";
+      userDiv.innerHTML = `<div class="avatar"></div> <div>You: ${userText}</div>`;
+      chat.appendChild(userDiv);
+
+      input.value = "";
+      chat.scrollTop = chat.scrollHeight;
+
+      // Add bot "typing..." placeholder
+      const botDiv = document.createElement("div");
+      botDiv.className = "msg bot";
+      botDiv.innerHTML = `<div class="avatar"></div> <div>Bot: <i>typing...</i></div>`;
+      chat.appendChild(botDiv);
+      chat.scrollTop = chat.scrollHeight;
+
+      try {
+        const response = await fetch("http://localhost:8080/api/chat", {
+          method: "POST",
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: userText })
+        });
+
+        const botReply = await response.text();
+        botDiv.innerHTML = `<div class="avatar"></div> <div>Bot: ${botReply}</div>`;
+        chat.scrollTop = chat.scrollHeight;
+      } catch (err) {
+        botDiv.innerHTML = `<div class="avatar"></div> <div style="color: red">Bot: Error contacting server.</div>`;
+        chat.scrollTop = chat.scrollHeight;
+      }
+    }
+  </script>
+</body>
+</html>
